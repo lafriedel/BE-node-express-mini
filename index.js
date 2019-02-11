@@ -4,17 +4,18 @@ const server = express();
 
 server.use(express.json());
 
+
+
 // POST to /api/users -- I'm getting the right responses, but it's still inserting the user no matter what
 server.post("/api/users", (req, res) => {
   const user = req.body;
 
+if (user.name && user.bio) {
+
+  }
+
   db.insert(user)
     .then(newUser => {
-      // if (!user[bio] || !user[id]) {
-      //     res.status(400).json({ success: false, error: "Please provide name and bio for the user." })
-      // } else {
-      //     res.status(201).json({ success: true, user });
-      // }
       if (user.name && user.bio) {
         res.status(201).json({ success: true, newUser });
       } else {
@@ -36,6 +37,8 @@ server.post("/api/users", (req, res) => {
     });
 });
 
+
+
 // GET to /api/users
 server.get("/api/users", (req, res) => {
   db.find()
@@ -55,6 +58,8 @@ server.get("/api/users", (req, res) => {
 server.listen(5000, () => {
   console.log("Running on port 5000");
 });
+
+
 
 // GET to /api/users/:id
 server.get("/api/users/:id", (req, res) => {
@@ -77,3 +82,36 @@ server.get("/api/users/:id", (req, res) => {
         res.status(500).json({ success: false, error: "The user information could not be retrieved." });
     });
 });
+
+
+
+// DELETE to /api/users/:id
+server.delete("/api/users/:id", (req, res) => {
+    
+    const userId = req.params.id;
+  
+    db.findById(userId)
+        .then(user => {
+        if (user) {
+            db.remove(userId)
+            .then(deletedUser => {
+                    res.status(200).json({ success: true, user })
+            })
+            .catch(err => {
+                res.status(500).json({ success: false, message: "The user could not be removed." });
+            });
+        } else {
+            res
+            .status(404)
+            .json({
+                success: false,
+                message: "The user with the specified ID does not exist."
+            });
+        };
+
+        })
+
+        .catch(err => {
+            res.status(500).json({ success: false, error: "The user information could not be retrieved." });
+        });
+})
