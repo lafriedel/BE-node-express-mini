@@ -19,16 +19,9 @@ server.post("/api/users", (req, res) => {
     .then(newUserId => {
       const { id } = newUserId;
 
-      db.findById(id)
-        .then(user => {
-          res.status(201).json({ user });
-        })
-        .catch(err => {
-          res.status(500).json({
-            success: false,
-            error: "The user information could not be retrieved."
-          });
-        });
+      db.findById(id).then(user => {
+        res.status(201).json({ user });
+      });
     })
     .catch(err => {
       res.status(500).json({
@@ -41,12 +34,11 @@ server.post("/api/users", (req, res) => {
 server.get("/api/users", (req, res) => {
   db.find()
     .then(users => {
-      res.status(200).json({ success: true, users });
+      res.status(200).json({ users });
     })
     .catch(err => {
       res.status(500).json({
-        success: false,
-        error: "The information could not be retrieved."
+        error: "The users information could not be retrieved."
       });
     });
 });
@@ -61,14 +53,12 @@ server.get("/api/users/:id", (req, res) => {
         return res.status(200).json({ user });
       } else {
         res.status(404).json({
-          success: false,
           message: "The user with the specified ID does not exist."
         });
       }
     })
     .catch(err => {
       res.status(500).json({
-        success: false,
         error: "The user information could not be retrieved."
       });
     });
@@ -80,28 +70,25 @@ server.delete("/api/users/:id", (req, res) => {
 
   db.findById(userId)
     .then(user => {
+      // might be able to take out this if statement, will try once submitted
       if (user) {
         db.remove(userId)
           .then(deletedUser => {
-            res.status(200).json({ success: true, user });
+            res.status(200).json({ user });
           })
           .catch(err => {
             res.status(500).json({
-              success: false,
-              message: "The user could not be removed."
+              error: "The user could not be removed."
             });
           });
       } else {
-        res.status(500).json({
-          success: false,
-          error: "The user information could not be retrieved."
+        res.status(404).json({
+          error: "The user with the specified ID does not exist."
         });
       }
     })
-
     .catch(err => {
       res.status(404).json({
-        success: false,
         message: "The user with the specified ID does not exist."
       });
     });
@@ -121,27 +108,31 @@ server.put("/api/users/:id", (req, res) => {
   }
 
   db.findById(userId)
-  .then(user => {
-    if (user) {
-      db.update(userId, newUser)
-        .then(updatedUser => {
-            db.findById(userId)
-                .then(updatedUser => {
-                    res.status(200).json({ updatedUser });
-                });
-        })
-        .catch(err => {
-          res
-            .status(500)
-            .json({ error: "The user information could not be modified." });
-        });
-    } else {
-        res.status(404).json({ message: "The user with the specified ID does not exist." })
-    }
-  })
-  .catch(err => {
-      res.status(404).json({ message: "The user with the specified ID does not exist." });
-  });
+    .then(user => {
+    // may also be able to remove this if statement
+      if (user) {
+        db.update(userId, newUser)
+          .then(updatedUser => {
+            db.findById(userId).then(updatedUser => {
+              res.status(200).json({ updatedUser });
+            });
+          })
+          .catch(err => {
+            res
+              .status(500)
+              .json({ error: "The user information could not be modified." });
+          });
+      } else {
+        res
+          .status(404)
+          .json({ message: "The user with the specified ID does not exist." });
+      }
+    })
+    .catch(err => {
+      res
+        .status(404)
+        .json({ message: "The user with the specified ID does not exist." });
+    });
 });
 
 server.listen(5000, () => {
