@@ -112,9 +112,9 @@ server.put("/api/users/:id", (req, res) => {
     // may also be able to remove this if statement
       if (user) {
         db.update(userId, newUser)
-          .then(updatedUser => {
-            db.findById(userId).then(updatedUser => {
-              res.status(200).json({ updatedUser });
+          .then(user => {
+            db.findById(userId).then(user => {
+              res.status(200).json({ user });
             });
           })
           .catch(err => {
